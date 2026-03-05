@@ -7,7 +7,6 @@
         content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Stajyer Ödeme Otomasyonu - Profesyonel Panel</title>
 
-    <!-- PWA & Mobile Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -516,6 +515,8 @@
         .settings-input:focus {
             border-color: var(--primary);
         }
+
+        .hidden { display: none; }
     </style>
 </head>
 
@@ -524,7 +525,6 @@
     <div class="theme-fab" id="themeBtn" title="Tema Değiştir">🎨</div>
     <div class="settings-fab" id="settingsBtn" title="Mesaj Ayarları">⚙️</div>
 
-    <!-- Theme Modal -->
     <div class="modal" id="themeModal">
         <div class="modal-card">
             <h2 class="modal-title">Görünüm Seçin</h2>
@@ -539,7 +539,6 @@
         </div>
     </div>
 
-    <!-- Settings Modal -->
     <div class="modal" id="settingsModal">
         <div class="modal-card">
             <h2 class="modal-title">⚙️ Mesaj Ayarları</h2>
@@ -559,7 +558,6 @@
         </div>
     </div>
 
-    <!-- iOS Install Guide Modal -->
     <div class="modal" id="iosGuide">
         <div class="modal-card">
             <h2 class="modal-title">Yükleme Rehberi (iOS)</h2>
@@ -579,7 +577,6 @@
         </div>
     </div>
 
-    <!-- Install Bars -->
     <div class="install-bar" id="installBar">
         <div class="install-btn" id="installBtn">📲 Uygulamayı Yükle</div>
     </div>
@@ -668,22 +665,15 @@
     <script>
         if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('sw.js'); }); }
 
-        // Dynamic Settings
         let schoolName = localStorage.getItem('cfg_school') || "Nene Hatun MTAL";
         let senderName = localStorage.getItem('cfg_sender') || "Bilişim Teknolojileri Alan Şefi Fatih PATIR";
 
         function updateUIFromSettings() {
             document.getElementById('configSchool').value = schoolName;
             document.getElementById('configSender').value = senderName;
-
-            // Footer Sync - Strip titles ONLY for the footer display
-            let footerName = senderName.replace(/Bilişim Teknolojileri Alan Şefi\s*/i, "")
-                .replace(/Alan Şefi\s*/i, "")
-                .trim();
-
+            let footerName = senderName.replace(/Bilişim Teknolojileri Alan Şefi\s*/i, "").replace(/Alan Şefi\s*/i, "").trim();
             document.getElementById('footerSender').innerText = footerName.toUpperCase();
             document.getElementById('footerSchool').innerText = schoolName.toUpperCase();
-
             document.getElementById('displayTitle').innerText = `Stajyer Ödeme Otomasyonu`;
             document.getElementById('displaySub').innerText = schoolName ? `${schoolName} Tahakkuk Paneli` : "Dijital Tahakkuk Paneli";
         }
@@ -753,63 +743,53 @@
 
         function processRecords(text) {
             const cleanRaw = text.replace(/\s+/g, ' ').trim();
-            const tcPattern = /\d{3}(?:\s*\*)+/g;
-            const entries = [];
-            let m;
+            // TC Kimlik No regex'ini daha esnek hale getirdik 
+            const tcRegex = /(\d{3}\*+\d{0,2})/g;
             const matches = [];
-            while ((m = tcPattern.exec(cleanRaw)) !== null) matches.push({ i: m.index, tc: m[0] });
+            let m;
+            while ((m = tcRegex.exec(cleanRaw)) !== null) {
+                matches.push({ i: m.index, tc: m[0] });
+            }
 
-            matches.forEach(item => {
-                const offset = 250;
-                const before = cleanRaw.substring(Math.max(0, item.i - offset), item.i).trim();
-                const after = cleanRaw.substring(item.i + item.tc.length, item.i + item.tc.length + offset).trim();
-                const tutarMatch = after.match(/(\d{1,3}(?:\.\d{3})*,\d{2})/);
+            const entries = [];
+            matches.forEach((item, index) => {
+                const start = item.i;
+                const end = matches[index + 1] ? matches[index + 1].i : cleanRaw.length;
+                const segment = cleanRaw.substring(start, end);
+
+                // Tutar Bulma (Para birimi formatı) 
+                const tutarMatch = segment.match(/(\d{1,3}(?:\.\d{3})*,\d{2})/);
                 if (!tutarMatch) return;
                 const tText = tutarMatch[1];
 
-                // Auto-detect absence (devamsızlık) - word directly before amount
-                let devGuess = 0;
-                const tIdx = after.indexOf(tText);
-                const textBeforeTutar = after.substring(0, tIdx).trim();
-                const wordsBeforeTutar = textBeforeTutar.split(/\s+/);
-                const lastWordBefore = wordsBeforeTutar[wordsBeforeTutar.length - 1];
-                if (/^\d+$/.test(lastWordBefore)) {
-                    devGuess = parseInt(lastWordBefore);
-                }
-
-                // Student Name Selection
+                // İsim Bulma (TC'den sonraki ilk metin bloğu) 
                 let sName = "";
-                const wordsAfter = after.split(' ');
-                for (let word of wordsAfter) {
-                    if (/^\d+$/.test(word.replace(/[\.,]/g, ''))) break;
+                const afterTC = segment.substring(item.tc.length).trim();
+                const parts = afterTC.split(' ');
+                for (let word of parts) {
+                    if (/\d/.test(word)) break; 
                     if (/[A-ZÇŞĞÜÖİ]/.test(word)) sName += word + " ";
                 }
                 sName = sName.trim();
+                if(sName.length < 2) return;
 
-                // Advanced Business Extractions
-                const numsBefore = before.match(/\d+/g);
-                let countParsed = 0;
-                let bizGuess = "";
-
-                if (numsBefore && numsBefore.length >= 1) {
-                    countParsed = parseInt(numsBefore[numsBefore.length - 1]);
-                    if (numsBefore.length >= 2) {
-                        // Logic: [RowNo] [Business Name] [EmployeeCount] [TC]
-                        const lastNum = numsBefore[numsBefore.length - 1];
-                        const secondLastNum = numsBefore[numsBefore.length - 2];
-                        const startIdx = before.lastIndexOf(secondLastNum) + secondLastNum.length;
-                        const endIdx = before.lastIndexOf(lastNum);
-                        if (startIdx < endIdx) {
-                            bizGuess = before.substring(startIdx, endIdx).replace(/[-_]/g, ' ').replace(/\s+/g, ' ').trim();
-                        }
-                    } else {
-                        // Fallback: Just take everything before the only number
-                        bizGuess = before.split(numsBefore[0])[0].trim();
-                    }
+                // Devamsızlık Bulma (Tutarın hemen solundaki sayı) 
+                let devGuess = 0;
+                const tutarIndex = afterTC.indexOf(tText);
+                const beforeTutar = afterTC.substring(0, tutarIndex).trim().split(/\s+/);
+                if (beforeTutar.length >= 1) {
+                    const lastVal = beforeTutar[beforeTutar.length - 1];
+                    if (/^\d+$/.test(lastVal)) devGuess = parseInt(lastVal);
                 }
 
-                // Final check for bizGuess quality
-                if (bizGuess.length < 2 || /^\d+$/.test(bizGuess)) bizGuess = "";
+                // İşletme Tahmini (TC'den önceki büyük metin bloğu) 
+                const prevStart = index > 0 ? matches[index-1].i : 0;
+                const prevSegment = cleanRaw.substring(prevStart, start);
+                let bizGuess = "İşletme Bulunamadı";
+                const bizMatches = prevSegment.match(/[A-ZÇŞĞÜÖİ]{2,}(?:\s[A-ZÇŞĞÜÖİ]{2,})*/g);
+                if (bizMatches && bizMatches.length > 0) {
+                    bizGuess = bizMatches[bizMatches.length - 1];
+                }
 
                 const memName = localStorage.getItem('p_name_' + item.tc);
                 const memBiz = JSON.parse(localStorage.getItem('p_biz_' + item.tc) || 'null');
@@ -818,12 +798,13 @@
                     tc: item.tc,
                     student: memName || sName,
                     biz: memBiz ? memBiz.n : bizGuess,
-                    cal: memBiz ? memBiz.c : countParsed,
+                    cal: memBiz ? memBiz.c : 1,
                     devam: devGuess,
                     tutar: tText,
                     saved: !!memBiz
                 });
             });
+
             renderEditTable(entries);
         }
 
@@ -836,7 +817,7 @@
                 body.appendChild(row);
             });
             document.getElementById('editCard').classList.remove('hidden');
-            document.getElementById('status').innerText = `✅ ${data.length} kayıt bulundu. Lütfen bilgileri kontrol ediniz.`;
+            document.getElementById('status').innerText = `✅ ${data.length} kayıt bulundu.`;
             document.getElementById('editCard').scrollIntoView({ behavior: 'smooth' });
         }
 
@@ -863,51 +844,26 @@
         function renderFinalMessages(data, ay) {
             const grid = document.getElementById('finalGrid');
             const bulkText = document.getElementById('bulkText');
-            const bulkSection = document.getElementById('bulkSection');
             grid.innerHTML = '';
-
             let bulkLines = [];
-
             data.forEach((r, i) => {
-                const moneyVal = r.mCalc;
-                const stateVal = parseFloat(r.tFull.replace(/\./g, '').replace(',', '.'));
-                const bizVal = Math.max(0, moneyVal - stateVal);
-
-                const moneyStr = moneyVal.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                const moneyStr = r.mCalc.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 const stateStr = r.tFull;
-                const bizStr = bizVal.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-                bulkLines.push(`${i + 1}- ${r.n} devamsızlığı ${r.dev} gün, alacağı ücret ${moneyStr} ₺, işletmesi ${stateStr} ₺ devlet desteği alacak.`);
-
-                const sms = `Değerli İşletme Yetkilisi, \nİyi çalışmalar dileriz. Ben, ${schoolName} ${senderName}.\n\n${ay} dönemi stajyer öğrencimiz ${r.n} için belirlenen ${moneyStr} ₺ tutarındaki stajyer maaşının, öğrenci IBAN hesabına yatırılmasını ve ödeme dekontunun tarafımıza iletilmesini rica ederiz.\n\nÖdemenizin tamamlanmasını müteakip, ilgili döneme ait ${stateStr} ₺ tutarındaki devlet katkısı payı işletme hesabınıza aktarılacaktır.\n\nGereken hassasiyeti göstereceğiniz için şimdiden teşekkür eder, iyi mesailer dileriz.`;
+                bulkLines.push(`${i + 1}- ${r.n} devamsızlığı ${r.dev} gün, alacağı ücret ${moneyStr} ₺.`);
+                const sms = `Değerli İşletme Yetkilisi, \nİyi çalışmalar dileriz. Ben, ${schoolName} ${senderName}.\n\n${ay} dönemi stajyer öğrencimiz ${r.n} için belirlenen ${moneyStr} ₺ tutarındaki stajyer maaşının, öğrenci IBAN hesabına yatırılmasını ve ödeme dekontunun tarafımıza iletilmesini rica ederiz.\n\nÖdemenizin tamamlanmasını müteakip, ilgili döneme ait ${stateStr} ₺ tutarındaki devlet katkısı payı işletme hesabınıza aktarılacaktır.`;
                 const box = document.createElement('div');
                 box.className = 'student-card';
-                box.innerHTML = `<div class="card-header"><div><div class="s-name">${r.n || 'Öğrenci Adı Belirtilmedi'}</div><div class="b-name">${r.b || 'İşletme Adı Belirtilmedi'}</div></div></div><div class="card-body"><div style="display:flex; gap:10px; margin-bottom:15px;"><div style="flex:1; background:#f0fdf4; padding:10px; border-radius:12px; border:1px solid #dcfce7; text-align:center;"><div style="font-size:9px; font-weight:800; color:#16a34a;">YATACAK MAAŞ</div><div style="font-size:17px; font-weight:900; color:#166534;">${moneyStr} ₺</div></div><div style="flex:1; background:#f8fafc; padding:10px; border-radius:12px; border:1px solid #e2e8f0; text-align:center;"><div style="font-size:9px; font-weight:800; color:#64748b;">DEVLET KATKISI</div><div style="font-size:17px; font-weight:900; color:#1e293b;">${stateStr} ₺</div></div></div><div class="msg-display" id="sms-${i}">${sms}</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><button class="btn-act btn-copy" onclick="copyFinal(${i}, this)">📋 Kopyala</button><a href="https://wa.me/?text=${encodeURIComponent(sms)}" target="_blank" class="btn-act btn-wa">📱 WhatsApp</a></div></div>`;
+                box.innerHTML = `<div class="card-header"><div><div class="s-name">${r.n}</div><div class="b-name">${r.b}</div></div></div><div class="card-body" style="padding:20px;"><div style="display:flex; gap:10px; margin-bottom:15px;"><div style="flex:1; background:#f0fdf4; padding:10px; border-radius:12px; text-align:center;"><div style="font-size:9px; font-weight:800; color:#16a34a;">YATACAK MAAŞ</div><div style="font-size:17px; font-weight:900;">${moneyStr} ₺</div></div><div style="flex:1; background:#f8fafc; padding:10px; border-radius:12px; text-align:center;"><div style="font-size:9px; font-weight:800; color:#64748b;">KATKI</div><div style="font-size:17px; font-weight:900;">${stateStr} ₺</div></div></div><div class="msg-display" id="sms-${i}">${sms}</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><button class="btn-act btn-copy" onclick="copyFinal(${i}, this)">📋 Kopyala</button><a href="https://wa.me/?text=${encodeURIComponent(sms)}" target="_blank" class="btn-act btn-wa">📱 WhatsApp</a></div></div>`;
                 grid.appendChild(box);
             });
-
             bulkText.innerText = bulkLines.join('\n');
-            bulkSection.classList.remove('hidden');
+            document.getElementById('bulkSection').classList.remove('hidden');
             grid.scrollIntoView({ behavior: 'smooth' });
         }
 
-        function copyBulk() {
-            const text = document.getElementById('bulkText').innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                alert("Toplu liste kopyalandı! ✅");
-            });
-        }
-
-        function copyFinal(id, btn) {
-            const text = document.getElementById('sms-' + id).innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                btn.innerText = "✅ Kopyalandı";
-                btn.classList.add('success');
-                setTimeout(() => { btn.innerText = "📋 Kopyala"; btn.classList.remove('success'); }, 2000);
-            });
-        }
-
-        function clearMemory() { if (confirm('Hafızayı sıfırlarsan tüm kayıtlı isim ve işletme bilgileri silinecektir. Emin misiniz?')) { localStorage.clear(); location.reload(); } }
+        function copyBulk() { navigator.clipboard.writeText(document.getElementById('bulkText').innerText).then(() => alert("Kopyalandı! ✅")); }
+        function copyFinal(id, btn) { navigator.clipboard.writeText(document.getElementById('sms-' + id).innerText).then(() => { btn.innerText = "✅ Kopyalandı"; setTimeout(() => btn.innerText = "📋 Kopyala", 2000); }); }
+        function clearMemory() { if (confirm('Tüm kayıtlar silinsin mi?')) { localStorage.clear(); location.reload(); } }
     </script>
 </body>
 
