@@ -637,6 +637,19 @@
 
         <div class="res-grid" id="finalGrid"></div>
 
+        <div id="announcementSection" class="hidden" style="margin-top: 30px;">
+            <div class="bulk-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                <div class="bulk-title">📢 Genel Teşekkür ve Hatırlatma</div>
+                <div class="bulk-content" id="announcementText" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3);"></div>
+                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
+                    <button class="btn-main" style="background: white; color: var(--text-main); margin-top: 0;"
+                        onclick="copyAnnouncement()">📋 Metni Kopyala</button>
+                    <button class="btn-main" style="background: #25D366; color: white; margin-top: 0; box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);"
+                        onclick="sendAnnouncementWA()">📱 WhatsApp'tan Gönder</button>
+                </div>
+            </div>
+        </div>
+
         <div id="bulkSection" class="hidden" style="margin-top: 30px;">
             <div class="bulk-card">
                 <div class="bulk-title">📋 Öğrenci Bilgi Listesi (Toplu Mesaj)</div>
@@ -991,7 +1004,15 @@
             const grid = document.getElementById('finalGrid');
             const bulkText = document.getElementById('bulkText');
             const bulkSection = document.getElementById('bulkSection');
+            const annSection = document.getElementById('announcementSection');
+            const annText = document.getElementById('announcementText');
+            
             grid.innerHTML = '';
+
+            // Genel Duyuru Hazırlama
+            const announcement = `Değerli İşletme Yetkilileri,\n\nÖdeme yapan tüm işletmelerimize teşekkür ederiz. Ayın 8'ine kadar ödeme dekontu tarafımıza ulaşmayan işletmelerin devlet katkılarını ödemede sıkıntı yaşayabileceğimizi hatırlatmak isteriz. Sürecin aksamaması adına ödeme dekontlarını zamanında ulaştırmanızı rica ederiz.\n\nİlginiz ve hassasiyetiniz için teşekkürler.\n\n${schoolName}\n${senderName}`;
+            annText.innerText = announcement;
+            annSection.classList.remove('hidden');
 
             let bulkLines = [];
 
@@ -1023,6 +1044,18 @@
             navigator.clipboard.writeText(text).then(() => {
                 alert("Toplu liste kopyalandı! ✅");
             });
+        }
+
+        function copyAnnouncement() {
+            const text = document.getElementById('announcementText').innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                alert("Duyuru metni kopyalandı! ✅");
+            });
+        }
+
+        function sendAnnouncementWA() {
+            const text = document.getElementById('announcementText').innerText;
+            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
 
         function copyFinal(id, btn) {
