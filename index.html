@@ -19,6 +19,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap"
         rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
             --primary: #3b82f6;
@@ -598,10 +599,10 @@
 
         <div class="glass-card" id="mainCard">
             <div class="upload-section">
-                <input type="file" id="pdfInput" accept="application/pdf" style="display:none">
+                <input type="file" id="pdfInput" accept="application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" style="display:none">
                 <label for="pdfInput" class="upload-trigger">
                     <i>📁</i>
-                    <span id="fileTxt" style="font-weight: 800;">İşletme Ödeme Raporu PDF Dosyasını Seçin</span>
+                    <span id="fileTxt" style="font-weight: 800;">PDF veya Excel Raporunuzu Seçin</span>
                 </label>
             </div>
 
@@ -720,6 +721,29 @@
         document.getElementById('pdfInput').onchange = (e) => { selFile = e.target.files[0]; if (selFile) { document.getElementById('fileTxt').innerText = selFile.name; detectDönem(selFile); } };
 
         async function detectDönem(f) {
+            if (f.name.toLowerCase().match(/\.xlsx?$/)) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    for(let s=0; s<workbook.SheetNames.length; s++) {
+                        const sheet = workbook.Sheets[workbook.SheetNames[s]];
+                        const json = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: ""});
+                        for(let i=0; i<Math.min(30, json.length); i++) {
+                            let textRow = json[i].join(" ");
+                            let m = textRow.match(/\b(0?[1-9]|1[12])\s*[\/\.-]\s*(20\d\d)\b/);
+                            if (m) {
+                                document.getElementById('ayInput').value = MONTHS[parseInt(m[1])] + ' ' + m[2];
+                                return;
+                            }
+                        }
+                    }
+                };
+                reader.readAsArrayBuffer(f);
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = async function () {
                 const pdf = await pdfjsLib.getDocument(new Uint8Array(this.result)).promise;
@@ -736,6 +760,26 @@
             if (!selFile) return alert('Lütfen bir dosya seçiniz.');
             const s = document.getElementById('status');
             s.innerText = "⏳ Veriler analiz ediliyor...";
+            
+            if (selFile.name.toLowerCase().match(/\.xlsx?$/)) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    
+                    let allRows = [];
+                    workbook.SheetNames.forEach(sheetName => {
+                        const sheet = workbook.Sheets[sheetName];
+                        const json = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: ""});
+                        allRows = allRows.concat(json);
+                    });
+                    
+                    processExcelRecords(allRows);
+                };
+                reader.readAsArrayBuffer(selFile);
+                return;
+            }
+
             const reader = new FileReader();
             reader.onload = async function () {
                 const pdf = await pdfjsLib.getDocument(new Uint8Array(this.result)).promise;
@@ -749,6 +793,89 @@
                 processRecords(combined);
             };
             reader.readAsArrayBuffer(selFile);
+        }
+
+        function processExcelRecords(rows) {
+            const entries = [];
+            
+            // Kolon indekslerini bulmak için 
+            let colMap = {
+                tc: -1,
+                ad: -1,
+                biz: -1,
+                cal: -1,
+                devam: -1,
+                tutar: -1
+            };
+            
+            let headerFound = false;
+
+            for(let r=0; r<rows.length; r++) {
+                let row = rows[r];
+                if (!row || !row.length) continue;
+
+                // Başlık satırını tespit et
+                if (!headerFound) {
+                    let textRow = row.join(" ").toUpperCase();
+                    if (textRow.includes("ÖĞRENCİ") || textRow.includes("İŞLETME") || textRow.includes("TUTAR")) {
+                        for(let c=0; c<row.length; c++) {
+                            let cell = String(row[c]).toUpperCase().trim();
+                            if (cell.includes("TC") || cell.includes("KİMLİK")) colMap.tc = c;
+                            if (cell.includes("ÖĞRENCİ") || cell.includes("AD SOYAD")) colMap.ad = c;
+                            if (cell.includes("İŞLETME")) colMap.biz = c;
+                            if (cell.includes("ÇALIŞAN")) colMap.cal = c;
+                            if (cell.includes("DEVAMSIZLIK")) colMap.devam = c;
+                            if (cell.includes("TUTAR") || cell.includes("ÖDENECEK")) colMap.tutar = c;
+                        }
+                        
+                        // En az isim ve tutar sütununu bulduysak başlığı bulduk sayılır.
+                        if (colMap.ad !== -1 && colMap.tutar !== -1) {
+                            headerFound = true;
+                        }
+                        continue;
+                    }
+                }
+
+                // Başlık bulunduysa ve bu satırda veri varsa oku
+                if (headerFound) {
+                    let sName = colMap.ad !== -1 ? String(row[colMap.ad] || '').trim() : "";
+                    let sTc = colMap.tc !== -1 ? String(row[colMap.tc] || '').trim() : "";
+                    
+                    // Geçersiz satırları (boş satırlar vb.) atla
+                    if (sName.length < 3 || sName.toUpperCase() === "ÖĞRENCİ AD SOYAD") continue;
+                    
+                    let sBiz = colMap.biz !== -1 ? String(row[colMap.biz] || '').trim() : "";
+                    let sCal = colMap.cal !== -1 ? parseInt(row[colMap.cal]) || 0 : 0;
+                    let sDevam = colMap.devam !== -1 ? parseInt(row[colMap.devam]) || 0 : 0;
+                    
+                    let tutarText = "0,00";
+                    if (colMap.tutar !== -1) {
+                        let cellVal = row[colMap.tutar];
+                        if (typeof cellVal === 'number') {
+                            tutarText = cellVal.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                        } else if (cellVal) {
+                            tutarText = String(cellVal).trim();
+                        }
+                    }
+                    
+                    // LocalStorage'dan önceki hafızayı kontrol et (Varsa üzerine yazar)
+                    // TC yoksa isme göre de arama yapılabilir, ancak genelde TC vardır.
+                    const memTc = sTc.replace(/\D/g, ''); // Sadece rakamları al
+                    const memName = localStorage.getItem('p_name_' + memTc);
+                    const memBiz = JSON.parse(localStorage.getItem('p_biz_' + memTc) || 'null');
+
+                    entries.push({
+                        tc: memTc || sTc,
+                        student: memName || sName,
+                        biz: memBiz ? memBiz.n : sBiz,
+                        cal: memBiz ? memBiz.c : sCal,
+                        devam: sDevam,
+                        tutar: tutarText,
+                        saved: !!memBiz
+                    });
+                }
+            }
+            renderEditTable(entries);
         }
 
         function processRecords(text) {
@@ -882,7 +1009,7 @@
                 const sms = `Değerli İşletme Yetkilisi, \nİyi çalışmalar dileriz. Ben, ${schoolName} ${senderName}.\n\n${ay} dönemi stajyer öğrencimiz ${r.n} için belirlenen ${moneyStr} ₺ tutarındaki stajyer maaşının, öğrenci IBAN hesabına yatırılmasını ve ödeme dekontunun tarafımıza iletilmesini rica ederiz.\n\nÖdemenizin tamamlanmasını müteakip, ilgili döneme ait ${stateStr} ₺ tutarındaki devlet katkısı payı işletme hesabınıza aktarılacaktır.\n\nGereken hassasiyeti göstereceğiniz için şimdiden teşekkür eder, iyi mesailer dileriz.`;
                 const box = document.createElement('div');
                 box.className = 'student-card';
-                box.innerHTML = `<div class="card-header"><div><div class="s-name">${r.n || 'Öğrenci Adı Belirtilmedi'}</div><div class="b-name">${r.b || 'İşletme Adı Belirtilmedi'}</div></div></div><div class="card-body"><div style="display:flex; gap:10px; margin-bottom:15px;"><div style="flex:1; background:#f0fdf4; padding:10px; border-radius:12px; border:1px solid #dcfce7; text-align:center;"><div style="font-size:9px; font-weight:800; color:#16a34a;">YATACAK MAAŞ</div><div style="font-size:17px; font-weight:900; color:#166534;">${moneyStr} ₺</div></div><div style="flex:1; background:#f8fafc; padding:10px; border-radius:12px; border:1px solid #e2e8f0; text-align:center;"><div style="font-size:9px; font-weight:800; color:#64748b;">DEVLET KATKISI</div><div style="font-size:17px; font-weight:900; color:#1e293b;">${stateStr} ₺</div></div></div><div class="msg-display" id="sms-${i}">${sms}</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><button class="btn-act btn-copy" onclick="copyFinal(${i}, this)">📋 Kopyala</button><a href="https://wa.me/?text=${encodeURIComponent(sms)}" target="_blank" class="btn-act btn-wa">📱 WhatsApp</a></div></div>`;
+                box.innerHTML = `<div class="card-header"><div><div class="s-name" style="color:var(--text-main);">${r.n || 'Öğrenci Adı Belirtilmedi'}</div><div class="b-name" style="color:var(--text-sub);">${r.b || 'İşletme Adı Belirtilmedi'}</div></div></div><div class="card-body" style="padding:20px;"><div style="display:flex; gap:10px; margin-bottom:15px;"><div style="flex:1; background:var(--accent); padding:10px; border-radius:12px; border:1px solid var(--border); text-align:center;"><div style="font-size:9px; font-weight:800; color:var(--text-sub);">YATACAK MAAŞ</div><div style="font-size:17px; font-weight:900; color:var(--primary);">${moneyStr} ₺</div></div><div style="flex:1; background:var(--bg); padding:10px; border-radius:12px; border:1px solid var(--border); text-align:center;"><div style="font-size:9px; font-weight:800; color:var(--text-sub);">DEVLET KATKISI</div><div style="font-size:17px; font-weight:900; color:var(--text-main);">${stateStr} ₺</div></div></div><div class="msg-display" id="sms-${i}">${sms}</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><button class="btn-act btn-copy" onclick="copyFinal(${i}, this)">📋 Kopyala</button><a href="https://wa.me/?text=${encodeURIComponent(sms)}" target="_blank" class="btn-act btn-wa">📱 WhatsApp</a></div></div>`;
                 grid.appendChild(box);
             });
 

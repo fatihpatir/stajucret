@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script></head>
+<body>
+<input type="file" id="f">
+<textarea id="out"></textarea>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+document.getElementById('f').onchange = async (e) => {
+    let file = e.target.files[0];
+    let reader = new FileReader();
+    reader.onload = async function() {
+        let pdf = await pdfjsLib.getDocument(new Uint8Array(this.result)).promise;
+        let t = "";
+        for(let i=1; i<=pdf.numPages; i++){
+            let pg = await pdf.getPage(i);
+            let items = await pg.getTextContent();
+            let sorted = items.items.sort((a,b) => Math.abs(b.transform[5]-a.transform[5])>2 ? b.transform[5]-a.transform[5] : a.transform[4]-b.transform[4]);
+            t += sorted.map(x=>x.str).join(' ') + " ";
+        }
+        document.getElementById('out').value = t;
+    };
+    reader.readAsArrayBuffer(file);
+};
+</script>
+</body>
+</html>
