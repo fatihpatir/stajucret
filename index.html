@@ -22,41 +22,57 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
         :root {
-            --primary: #3b82f6;
-            --primary-glow: rgba(59, 130, 246, 0.4);
-            --bg: #f0f4f8;
-            --card-bg: rgba(255, 255, 255, 0.95);
+            --primary: #4f46e5;
+            --primary-glow: rgba(79, 70, 229, 0.3);
+            --bg: #f8fafc;
+            --card-bg: rgba(255, 255, 255, 0.85);
+            --card-surface: #ffffff;
             --text-main: #0f172a;
-            --text-sub: #64748b;
-            --border: #e2e8f0;
-            --accent: #f8fafc;
-            --gradient: linear-gradient(135deg, #1e293b 0%, #334155 100%);
-            --radius-xl: 24px;
-            --radius-lg: 16px;
+            --text-sub: #475569;
+            --border: rgba(0, 0, 0, 0.08);
+            --accent: #f1f5f9;
+            --gradient: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            --radius-xl: 32px;
+            --radius-lg: 20px;
         }
 
         [data-theme="midnight"] {
-            --primary: #fbbf24;
-            --primary-glow: rgba(251, 191, 36, 0.3);
-            --bg: #0f172a;
-            --card-bg: rgba(30, 41, 59, 0.9);
+            --primary: #f59e0b;
+            --primary-glow: rgba(245, 158, 11, 0.2);
+            --bg: #020617;
+            --card-bg: rgba(15, 23, 42, 0.85);
+            --card-surface: #1e293b;
             --text-main: #f8fafc;
             --text-sub: #94a3b8;
-            --border: #334155;
-            --accent: #1e293b;
-            --gradient: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            --border: rgba(255, 255, 255, 0.1);
+            --accent: #0f172a;
+            --gradient: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
         }
 
         [data-theme="emerald"] {
             --primary: #10b981;
-            --primary-glow: rgba(16, 185, 129, 0.3);
-            --bg: #050505;
-            --card-bg: rgba(15, 15, 15, 0.95);
-            --text-main: #ecfdf5;
+            --primary-glow: rgba(16, 185, 129, 0.2);
+            --bg: #020817;
+            --card-bg: rgba(9, 15, 33, 0.8);
+            --card-surface: #0f172a;
+            --text-main: #f0fdf4;
             --text-sub: #94a3b8;
-            --border: #222;
-            --accent: #064e3b;
-            --gradient: linear-gradient(135deg, #050505 0%, #111 100%);
+            --border: rgba(16, 185, 129, 0.2);
+            --accent: #042f2e;
+            --gradient: linear-gradient(135deg, #064e3b 0%, #111 100%);
+        }
+
+        [data-theme="rose"] {
+            --primary: #f43f5e;
+            --primary-glow: rgba(244, 63, 94, 0.2);
+            --bg: #0f0b0f;
+            --card-bg: rgba(30, 20, 30, 0.85);
+            --card-surface: #2d1b2d;
+            --text-main: #fff1f2;
+            --text-sub: #fda4af;
+            --border: rgba(244, 63, 94, 0.2);
+            --accent: #4c1d24;
+            --gradient: linear-gradient(135deg, #881337 0%, #4c1d24 100%);
         }
 
         * {
@@ -176,29 +192,31 @@
 
         .glass-card {
             background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
             border-radius: var(--radius-xl);
             border: 1px solid var(--border);
             padding: 30px;
             margin-bottom: 30px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.1);
         }
 
         .upload-trigger {
-            border: 2.5px dashed var(--primary);
+            border: 2px dashed var(--primary);
             border-radius: var(--radius-lg);
-            padding: 60px 20px;
+            padding: 50px 20px;
             text-align: center;
             cursor: pointer;
-            transition: 0.3s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             background: var(--accent);
             display: block;
+            border-width: 2px;
         }
 
         .upload-trigger:hover {
             background: var(--primary-glow);
-            opacity: 0.8;
+            border-style: solid;
+            transform: scale(1.01);
         }
 
         .upload-trigger i {
@@ -210,22 +228,28 @@
 
         .btn-main {
             width: 100%;
-            padding: 18px;
+            padding: 20px;
             border-radius: var(--radius-lg);
             border: none;
             background: var(--primary);
-            color: white;
+            color: #fff;
             font-size: 16px;
             font-weight: 800;
             cursor: pointer;
             margin-top: 25px;
-            transition: 0.3s;
-            box-shadow: 0 8px 25px var(--primary-glow);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 0 12px 30px var(--primary-glow);
             letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .btn-main:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 40px var(--primary-glow);
         }
 
         .btn-main:active {
-            transform: scale(0.98);
+            transform: translateY(0px) scale(0.98);
         }
 
         .res-grid {
@@ -236,56 +260,63 @@
         }
 
         .student-card {
-            background: var(--card-bg);
+            background: var(--card-surface);
             border-radius: var(--radius-xl);
             border: 1.5px solid var(--border);
-            transition: 0.3s ease;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
         }
 
         .student-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-8px) scale(1.02);
             border-color: var(--primary);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.1);
         }
 
         .card-header {
             padding: 20px;
             background: var(--accent);
-            border-bottom: 1.5px solid var(--border);
-            border-radius: var(--radius-xl) var(--radius-xl) 0 0;
+            border-bottom: 1px solid var(--border);
         }
 
         .s-name {
-            font-size: 17px;
-            font-weight: 800;
+            font-size: 18px;
+            font-weight: 900;
             color: var(--text-main);
+            letter-spacing: -0.3px;
         }
 
         .b-name {
             font-size: 11px;
-            font-weight: 600;
+            font-weight: 700;
             color: var(--text-sub);
             margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .msg-display {
             background: var(--accent);
-            padding: 15px;
-            border-radius: 12px;
+            padding: 18px;
+            border-radius: 16px;
             font-size: 13px;
-            border: 1.5px solid var(--border);
-            margin: 15px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
             color: var(--text-main);
-            line-height: 1.6;
+            line-height: 1.7;
             white-space: pre-wrap;
+            font-weight: 500;
         }
 
         .bulk-card {
             background: var(--gradient);
-            color: white;
+            color: #fff;
             border-radius: var(--radius-xl);
-            padding: 25px;
-            margin-bottom: 30px;
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+            padding: 35px;
+            margin-bottom: 40px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .bulk-title {
@@ -473,19 +504,22 @@
 
         .edit-input {
             width: 100%;
-            padding: 8px 12px;
-            border-radius: 8px;
+            padding: 10px 14px;
+            border-radius: 10px;
             border: 1.5px solid var(--border);
-            background: var(--accent);
+            background: var(--bg);
             color: var(--text-main);
             font-family: inherit;
             font-weight: 700;
             outline: none;
-            transition: 0.3s;
+            transition: all 0.2s;
+            font-size: 13px;
         }
 
         .edit-input:focus {
             border-color: var(--primary);
+            background: var(--card-surface);
+            box-shadow: 0 0 0 4px var(--primary-glow);
         }
 
         .settings-group {
@@ -529,12 +563,14 @@
     <div class="modal" id="themeModal">
         <div class="modal-card">
             <h2 class="modal-title">Görünüm Seçin</h2>
-            <div style="cursor: pointer; padding: 15px; border-radius: 12px; background: var(--accent); margin-bottom: 10px;"
-                onclick="setTheme('default')">Deep Sea 🌊</div>
-            <div style="cursor: pointer; padding: 15px; border-radius: 12px; background: var(--accent); margin-bottom: 10px;"
+            <div style="cursor: pointer; padding: 18px; border-radius: 16px; background: #e0e7ff; color: #1e1b4b; font-weight: 800; margin-bottom: 12px; border: 2px solid #c7d2fe;"
+                onclick="setTheme('default')">Deep Indigo 🌊</div>
+            <div style="cursor: pointer; padding: 18px; border-radius: 16px; background: #1e293b; color: #fbbf24; font-weight: 800; margin-bottom: 12px; border: 2px solid #fbbf24;"
                 onclick="setTheme('midnight')">Midnight Gold 🌙</div>
-            <div style="cursor: pointer; padding: 15px; border-radius: 12px; background: var(--accent); margin-bottom: 10px;"
+            <div style="cursor: pointer; padding: 18px; border-radius: 16px; background: #064e3b; color: #10b981; font-weight: 800; margin-bottom: 12px; border: 2px solid #10b981;"
                 onclick="setTheme('emerald')">Cyber Emerald 🌲</div>
+            <div style="cursor: pointer; padding: 18px; border-radius: 16px; background: #4c1d24; color: #fda4af; font-weight: 800; margin-bottom: 12px; border: 2px solid #f43f5e;"
+                onclick="setTheme('rose')">Cyber Rose 🌹</div>
             <button class="btn-main" style="background: var(--text-sub);"
                 onclick="toggleModal('themeModal')">Kapat</button>
         </div>
@@ -596,13 +632,12 @@
             <h1 id="displayTitle">Stajyer Ödeme Otomasyonu</h1>
             <p class="header-sub" id="displaySub">Dijital Tahakkuk Yönetimi</p>
         </header>
-
         <div class="glass-card" id="mainCard">
             <div class="upload-section">
-                <input type="file" id="pdfInput" accept="application/pdf, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" style="display:none">
+                <input type="file" id="pdfInput" accept="application/pdf,.xlsx,.xls" style="display:none">
                 <label for="pdfInput" class="upload-trigger">
                     <i>📁</i>
-                    <span id="fileTxt" style="font-weight: 800;">PDF veya Excel Raporunuzu Seçin</span>
+                    <span id="fileTxt" style="font-weight: 800;">PDF veya Excel Dosyasını (ilovepdf vb.) Seçin</span>
                 </label>
             </div>
 
@@ -621,8 +656,10 @@
                 <table>
                     <thead>
                         <tr>
+                            <th style="width: 40px;">No</th>
                             <th>Öğrenci Adı Soyadı</th>
                             <th>İşletme Adı</th>
+                            <th style="width: 120px;">İşletme Telefon</th>
                             <th>Çalışan</th>
                             <th style="width: 70px;">Dev.</th>
                             <th style="width: 100px;">Katkı (₺)</th>
@@ -637,24 +674,12 @@
 
         <div class="res-grid" id="finalGrid"></div>
 
-        <div id="announcementSection" class="hidden" style="margin-top: 30px;">
-            <div class="bulk-card" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
-                <div class="bulk-title">📢 Genel Teşekkür ve Hatırlatma</div>
-                <div class="bulk-content" id="announcementText" style="background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3);"></div>
-                <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                    <button class="btn-main" style="background: white; color: var(--text-main); margin-top: 0;"
-                        onclick="copyAnnouncement()">📋 Metni Kopyala</button>
-                    <button class="btn-main" style="background: #25D366; color: white; margin-top: 0; box-shadow: 0 8px 25px rgba(37, 211, 102, 0.4);"
-                        onclick="sendAnnouncementWA()">📱 WhatsApp'tan Gönder</button>
-                </div>
-            </div>
-        </div>
-
         <div id="bulkSection" class="hidden" style="margin-top: 30px;">
             <div class="bulk-card">
                 <div class="bulk-title">📋 Öğrenci Bilgi Listesi (Toplu Mesaj)</div>
                 <div class="bulk-content" id="bulkText"></div>
-                <button class="btn-main" style="background: white; color: var(--text-main); margin-top: 0;"
+                <button class="btn-main"
+                    style="background: #ffffff; color: #0f172a; margin-top: 0; box-shadow: 0 10px 25px rgba(0,0,0,0.2);"
                     onclick="copyBulk()">Listeyi Kopyala</button>
             </div>
         </div>
@@ -669,7 +694,8 @@
             <div
                 style="font-size: 13px; font-weight: 600; color: var(--text-sub); opacity: 0.8; letter-spacing: 1px; text-transform: uppercase;">
                 <span id="footerSchool">NENE HATUN MTAL</span> <span
-                    style="margin: 0 8px; color: var(--primary);">•</span> KORKUTELİ / ANTALYA
+                    style="margin: 0 8px; color: var(--primary);">•</span>
+                KORKUTELİ / ANTALYA
             </div>
             <div style="margin-top: 40px;">
                 <button onclick="clearMemory()"
@@ -734,161 +760,150 @@
         document.getElementById('pdfInput').onchange = (e) => { selFile = e.target.files[0]; if (selFile) { document.getElementById('fileTxt').innerText = selFile.name; detectDönem(selFile); } };
 
         async function detectDönem(f) {
-            if (f.name.toLowerCase().match(/\.xlsx?$/)) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    
-                    for(let s=0; s<workbook.SheetNames.length; s++) {
-                        const sheet = workbook.Sheets[workbook.SheetNames[s]];
-                        const json = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: ""});
-                        for(let i=0; i<Math.min(30, json.length); i++) {
-                            let textRow = json[i].join(" ");
-                            let m = textRow.match(/\b(0?[1-9]|1[12])\s*[\/\.-]\s*(20\d\d)\b/);
-                            if (m) {
-                                document.getElementById('ayInput').value = MONTHS[parseInt(m[1])] + ' ' + m[2];
-                                return;
-                            }
-                        }
-                    }
-                };
-                reader.readAsArrayBuffer(f);
+            // Filename based detection (Always works for both Excel and PDF)
+            const n = f.name.toLowerCase();
+            const nameMatch = n.match(/(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık)\s*(20\d\d)/) ||
+                n.match(/(20\d\d)\s*(ocak|şubat|mart|nisan|mayıs|haziran|temmuz|ağustos|eylül|ekim|kasım|aralık)/);
+
+            if (nameMatch) {
+                const isYearFirst = /^\d{4}/.test(nameMatch[0].trim());
+                const mStr = isYearFirst ? nameMatch[2] : nameMatch[1];
+                const yStr = isYearFirst ? nameMatch[1] : nameMatch[2];
+                document.getElementById('ayInput').value = mStr.charAt(0).toUpperCase() + mStr.slice(1).toLowerCase() + ' ' + yStr;
                 return;
             }
 
-            const reader = new FileReader();
-            reader.onload = async function () {
-                const pdf = await pdfjsLib.getDocument(new Uint8Array(this.result)).promise;
-                const p = await pdf.getPage(1);
-                const c = await p.getTextContent();
-                const txt = c.items.map(i => i.str).join(' ');
-                const m = txt.match(/\b(0?[1-9]|1[12])\s*\/\s*(20\d\d)\b/);
-                if (m) document.getElementById('ayInput').value = MONTHS[parseInt(m[1])] + ' ' + m[2];
-            };
-            reader.readAsArrayBuffer(f);
+            if (f.type === "application/pdf") {
+                const reader = new FileReader();
+                reader.onload = async function () {
+                    try {
+                        const pdf = await pdfjsLib.getDocument(new Uint8Array(this.result)).promise;
+                        const p = await pdf.getPage(1);
+                        const c = await p.getTextContent();
+                        const txt = c.items.map(i => i.str).join(' ');
+                        const m = txt.match(/\b(0?[1-9]|1[12])\s*\/\s*(20\d\d)\b/);
+                        if (m) document.getElementById('ayInput').value = MONTHS[parseInt(m[1])] + ' ' + m[2];
+                    } catch (e) { console.error("PDF Dönem Tespit Hatası:", e); }
+                };
+                reader.readAsArrayBuffer(f);
+            }
         }
 
         async function startAnalysis() {
             if (!selFile) return alert('Lütfen bir dosya seçiniz.');
             const s = document.getElementById('status');
             s.innerText = "⏳ Veriler analiz ediliyor...";
-            
-            if (selFile.name.toLowerCase().match(/\.xlsx?$/)) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, {type: 'array'});
-                    
-                    let allRows = [];
-                    workbook.SheetNames.forEach(sheetName => {
-                        const sheet = workbook.Sheets[sheetName];
-                        const json = XLSX.utils.sheet_to_json(sheet, {header: 1, defval: ""});
-                        allRows = allRows.concat(json);
-                    });
-                    
-                    processExcelRecords(allRows);
-                };
-                reader.readAsArrayBuffer(selFile);
-                return;
-            }
 
             const reader = new FileReader();
-            reader.onload = async function () {
-                const pdf = await pdfjsLib.getDocument(new Uint8Array(this.result)).promise;
-                let combined = "";
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const pg = await pdf.getPage(i);
-                    const items = await pg.getTextContent();
-                    const sorted = items.items.sort((a, b) => Math.abs(b.transform[5] - a.transform[5]) > 2 ? b.transform[5] - a.transform[5] : a.transform[4] - b.transform[4]);
-                    combined += sorted.map(it => it.str).join(' ') + " ";
+            reader.onload = async function (e) {
+                const data = new Uint8Array(e.target.result);
+
+                if (selFile.name.endsWith('.xlsx') || selFile.name.endsWith('.xls')) {
+                    // Excel Processing
+                    try {
+                        const workbook = XLSX.read(data, { type: 'array' });
+                        let allEntries = [];
+
+                        // Process ALL sheets in the workbook
+                        workbook.SheetNames.forEach(sheetName => {
+                            const firstSheet = workbook.Sheets[sheetName];
+                            const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+                            const sheetEntries = processExcelSheet(jsonData);
+                            allEntries = allEntries.concat(sheetEntries);
+                        });
+
+                        if (allEntries.length === 0) {
+                            alert("Uyarı: Hiç kayıt bulunamadı. Lütfen Excel başlıklarını veya sayfalarını kontrol ediniz.");
+                        }
+
+                        renderEditTable(allEntries);
+                    } catch (err) {
+                        console.error(err);
+                        alert("Excel okuma hatası: " + err.message);
+                    }
+                } else {
+                    // PDF Processing (Previous Logic)
+                    try {
+                        const pdf = await pdfjsLib.getDocument(data).promise;
+                        let combined = "";
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const pg = await pdf.getPage(i);
+                            const items = await pg.getTextContent();
+                            const sorted = items.items.sort((a, b) => Math.abs(b.transform[5] - a.transform[5]) > 2 ? b.transform[5] - a.transform[5] : a.transform[4] - b.transform[4]);
+                            combined += sorted.map(it => it.str).join(' ') + " ";
+                        }
+                        processRecords(combined);
+                    } catch (err) {
+                        console.error(err);
+                        alert("PDF okuma hatası: " + err.message);
+                    }
                 }
-                processRecords(combined);
             };
             reader.readAsArrayBuffer(selFile);
         }
 
-        function processExcelRecords(rows) {
+        function processExcelSheet(rows) {
             const entries = [];
-            
-            // Kolon indekslerini bulmak için 
-            let colMap = {
-                tc: -1,
-                ad: -1,
-                biz: -1,
-                cal: -1,
-                devam: -1,
-                tutar: -1
-            };
-            
-            let headerFound = false;
+            let headerIdx = -1;
 
-            for(let r=0; r<rows.length; r++) {
-                let row = rows[r];
-                if (!row || !row.length) continue;
-
-                // Başlık satırını tespit et
-                if (!headerFound) {
-                    let textRow = row.join(" ").toUpperCase();
-                    if (textRow.includes("ÖĞRENCİ") || textRow.includes("İŞLETME") || textRow.includes("TUTAR")) {
-                        for(let c=0; c<row.length; c++) {
-                            let cell = String(row[c]).toUpperCase().trim();
-                            if (cell.includes("TC") || cell.includes("KİMLİK")) colMap.tc = c;
-                            if (cell.includes("ÖĞRENCİ") || cell.includes("AD SOYAD")) colMap.ad = c;
-                            if (cell.includes("İŞLETME")) colMap.biz = c;
-                            if (cell.includes("ÇALIŞAN")) colMap.cal = c;
-                            if (cell.includes("DEVAMSIZLIK")) colMap.devam = c;
-                            if (cell.includes("TUTAR") || cell.includes("ÖDENECEK")) colMap.tutar = c;
-                        }
-                        
-                        // En az isim ve tutar sütununu bulduysak başlığı bulduk sayılır.
-                        if (colMap.ad !== -1 && colMap.tutar !== -1) {
-                            headerFound = true;
-                        }
-                        continue;
-                    }
-                }
-
-                // Başlık bulunduysa ve bu satırda veri varsa oku
-                if (headerFound) {
-                    let sName = colMap.ad !== -1 ? String(row[colMap.ad] || '').trim() : "";
-                    let sTc = colMap.tc !== -1 ? String(row[colMap.tc] || '').trim() : "";
-                    
-                    // Geçersiz satırları (boş satırlar vb.) atla
-                    if (sName.length < 3 || sName.toUpperCase() === "ÖĞRENCİ AD SOYAD") continue;
-                    
-                    let sBiz = colMap.biz !== -1 ? String(row[colMap.biz] || '').trim() : "";
-                    let sCal = colMap.cal !== -1 ? parseInt(row[colMap.cal]) || 0 : 0;
-                    let sDevam = colMap.devam !== -1 ? parseInt(row[colMap.devam]) || 0 : 0;
-                    
-                    let tutarText = "0,00";
-                    if (colMap.tutar !== -1) {
-                        let cellVal = row[colMap.tutar];
-                        if (typeof cellVal === 'number') {
-                            tutarText = cellVal.toLocaleString('tr-TR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                        } else if (cellVal) {
-                            tutarText = String(cellVal).trim();
-                        }
-                    }
-                    
-                    // LocalStorage'dan önceki hafızayı kontrol et (Varsa üzerine yazar)
-                    // TC yoksa isme göre de arama yapılabilir, ancak genelde TC vardır.
-                    const memTc = sTc.replace(/\D/g, ''); // Sadece rakamları al
-                    const memName = localStorage.getItem('p_name_' + memTc);
-                    const memBiz = JSON.parse(localStorage.getItem('p_biz_' + memTc) || 'null');
-
-                    entries.push({
-                        tc: memTc || sTc,
-                        student: memName || sName,
-                        biz: memBiz ? memBiz.n : sBiz,
-                        cal: memBiz ? memBiz.c : sCal,
-                        devam: sDevam,
-                        tutar: tutarText,
-                        saved: !!memBiz
-                    });
+            // 1. Find the header row by looking for "SIRA" or "İŞLETME" or "TC" in the first few columns
+            for (let i = 0; i < Math.min(rows.length, 20); i++) {
+                if (!rows[i]) continue;
+                const rowUpper = rows[i].map(c => String(c || '').toUpperCase());
+                if (rowUpper.some(c => c.includes("SIRA") || c.includes("İŞLETME") || c.includes("TC") || c.includes("KİMLİK"))) {
+                    headerIdx = i;
+                    break;
                 }
             }
-            renderEditTable(entries);
+
+            // Data starts after header. If no header found, assume row 0 is header.
+            const startRow = (headerIdx === -1) ? 0 : headerIdx + 1;
+
+            for (let i = startRow; i < rows.length; i++) {
+                const r = rows[i];
+                if (!r || r.length < 5) continue;
+
+                // Mapping based on user's A-H requirement:
+                // A(0): Sıra, B(1): İşletme, C(2): Çalışan, D(3): TC, E(4): Ad Soyad, F(5): Gün, G(6): Devamsızlık, H(7): Tutar, I(8): Telefon
+
+                const sNo = String(r[0] || '').trim();
+                const biz = String(r[1] || '').trim();
+                const cal = parseInt(r[2]) || 0;
+                const rawTc = String(r[3] || '').trim();
+                const sName = String(r[4] || '').trim();
+                if (!rawTc && !sName) continue;
+                if (sNo.toLowerCase().includes("toplam") || sName.toLowerCase().includes("toplam")) continue;
+
+                const gun = parseInt(r[5]) || 0;
+                const dev = parseInt(r[6]) || 0;
+                let amount = String(r[7] || '').trim();
+                const excelPhone = String(r[8] || '').replace(/\D/g, '').trim();
+
+                const memName = localStorage.getItem('p_name_' + rawTc);
+                const memBiz = JSON.parse(localStorage.getItem('p_biz_' + rawTc) || 'null');
+
+                // Determine final business name to look up phone
+                const finalBizName = biz || (memBiz ? memBiz.n : "");
+                const memPhone = localStorage.getItem('p_phone_biz_' + finalBizName) || localStorage.getItem('p_phone_biz_' + biz);
+
+                if (typeof r[7] === 'number') {
+                    amount = r[7].toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                }
+
+                entries.push({
+                    sNo: sNo,
+                    tc: rawTc,
+                    student: sName || memName || 'Bilinmiyor', // Prioritize source name
+                    biz: finalBizName,
+                    phone: excelPhone || memPhone || '',
+                    cal: cal || (memBiz ? memBiz.c : 0),
+                    devam: dev,
+                    tutar: amount.replace('₺', '').replace(/\s/g, '').trim(),
+                    saved: !!memBiz,
+                    phoneFromMem: !excelPhone && !!memPhone
+                });
+            }
+            return entries;
         }
 
         function processRecords(text) {
@@ -954,14 +969,19 @@
                 const memName = localStorage.getItem('p_name_' + item.tc);
                 const memBiz = JSON.parse(localStorage.getItem('p_biz_' + item.tc) || 'null');
 
+                const finalBizName = bizGuess || (memBiz ? memBiz.n : "");
+                const memPhone = localStorage.getItem('p_phone_biz_' + finalBizName) || localStorage.getItem('p_phone_biz_' + bizGuess);
+
                 entries.push({
                     tc: item.tc,
-                    student: memName || sName,
-                    biz: memBiz ? memBiz.n : bizGuess,
-                    cal: memBiz ? memBiz.c : countParsed,
+                    student: sName || memName || 'Bilinmiyor', // Prioritize source name
+                    biz: finalBizName,
+                    phone: memPhone || '',
+                    cal: countParsed || (memBiz ? memBiz.c : 0),
                     devam: devGuess,
                     tutar: tText,
-                    saved: !!memBiz
+                    saved: !!memBiz,
+                    phoneFromMem: !!memPhone
                 });
             });
             renderEditTable(entries);
@@ -972,7 +992,20 @@
             body.innerHTML = '';
             data.forEach((r, i) => {
                 const row = document.createElement('tr');
-                row.innerHTML = `<td><input type="text" class="edit-input" id="inp-name-${i}" value="${r.student}"></td><td><input type="text" class="edit-input" id="inp-biz-${i}" value="${r.biz}" style="${r.saved ? 'background:#ecfdf5; border-color:#22c55e;' : 'border-color:#fb7185;'}"></td><td><input type="number" class="edit-input" style="width:60px; text-align:center;" id="inp-cal-${i}" value="${r.cal}"></td><td><input type="number" class="edit-input" style="width:60px; text-align:center;" id="inp-devam-${i}" value="${r.devam}"></td><td style="font-weight: 800; font-size: 13px;">${r.tutar} ₺</td><input type="hidden" id="inp-tc-${i}" value="${r.tc}">`;
+                const phoneStyle = r.phoneFromMem ? 'background:rgba(59, 130, 246, 0.15); border: 2px solid #3b82f6; font-weight:800;' : '';
+                const bizStyle = r.saved ? 'background:rgba(34, 197, 94, 0.15); border: 2px solid #22c55e;' : 'border-color:rgba(251, 113, 133, 0.5);';
+
+                row.innerHTML = `
+                    <td style="font-size: 11px; font-weight: 800; color: var(--text-sub); text-align: center;">${r.sNo || (i + 1)}</td>
+                    <td><input type="text" class="edit-input" id="inp-name-${i}" value="${r.student}"></td>
+                    <td><input type="text" class="edit-input" id="inp-biz-${i}" value="${r.biz}" style="${bizStyle}"></td>
+                    <td><input type="text" class="edit-input" id="inp-phone-${i}" value="${r.phone}" placeholder="5xx..." style="${phoneStyle}"></td>
+                    <td><input type="number" class="edit-input" style="width:60px; text-align:center;" id="inp-cal-${i}" value="${r.cal}"></td>
+                    <td><input type="number" class="edit-input" style="width:60px; text-align:center;" id="inp-devam-${i}" value="${r.devam}"></td>
+                    <td style="font-weight: 800; font-size: 13px; text-align: right;">${r.tutar} ₺</td>
+                    <input type="hidden" id="inp-tc-${i}" value="${r.tc}">
+                    <input type="hidden" id="inp-sno-${i}" value="${r.sNo || ''}">
+                `;
                 body.appendChild(row);
             });
             document.getElementById('editCard').classList.remove('hidden');
@@ -987,15 +1020,24 @@
             for (let i = 0; i < rows.length; i++) {
                 const n = document.getElementById(`inp-name-${i}`).value;
                 const b = document.getElementById(`inp-biz-${i}`).value;
+                const ph = document.getElementById(`inp-phone-${i}`).value.trim();
                 const c = parseInt(document.getElementById(`inp-cal-${i}`).value) || 0;
                 const dev = parseInt(document.getElementById(`inp-devam-${i}`).value) || 0;
                 const tc = document.getElementById(`inp-tc-${i}`).value;
-                const tFull = rows[i].cells[4].innerText.replace(' ₺', '');
+                const sno = document.getElementById(`inp-sno-${i}`).value;
+
+                // cell 6 because now we have sno as cell 0 and phone as cell 3
+                const tFull = rows[i].cells[6].innerText.replace(' ₺', '');
                 const tNumeric = parseFloat(tFull.replace(/\./g, '').replace(',', '.'));
+
                 if (n) localStorage.setItem('p_name_' + tc, n);
-                if (b) localStorage.setItem('p_biz_' + tc, JSON.stringify({ n: b, c: c }));
+                if (b) {
+                    localStorage.setItem('p_biz_' + tc, JSON.stringify({ n: b, c: c }));
+                    if (ph) localStorage.setItem('p_phone_biz_' + b, ph);
+                }
+
                 const mCalc = (c >= 20) ? (tNumeric * 3) : (tNumeric / 2 * 3);
-                list.push({ n, b, c, dev, tFull, mCalc });
+                list.push({ n, b, c, dev, tFull, mCalc, sno, ph });
             }
             renderFinalMessages(list, ay);
         }
@@ -1004,15 +1046,7 @@
             const grid = document.getElementById('finalGrid');
             const bulkText = document.getElementById('bulkText');
             const bulkSection = document.getElementById('bulkSection');
-            const annSection = document.getElementById('announcementSection');
-            const annText = document.getElementById('announcementText');
-            
             grid.innerHTML = '';
-
-            // Genel Duyuru Hazırlama
-            const announcement = `Değerli İşletme Yetkilileri,\n\nÖdeme yapan tüm işletmelerimize teşekkür ederiz. Ayın 8'ine kadar ödeme dekontu tarafımıza ulaşmayan işletmelerin devlet katkılarını ödemede sıkıntı yaşayabileceğimizi hatırlatmak isteriz. Sürecin aksamaması adına ödeme dekontlarını zamanında ulaştırmanızı rica ederiz.\n\nİlginiz ve hassasiyetiniz için teşekkürler.\n\n${schoolName}\n${senderName}`;
-            annText.innerText = announcement;
-            annSection.classList.remove('hidden');
 
             let bulkLines = [];
 
@@ -1025,37 +1059,63 @@
                 const stateStr = r.tFull;
                 const bizStr = bizVal.toLocaleString('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
-                bulkLines.push(`${i + 1}- ${r.n} devamsızlığı ${r.dev} gün, alacağı ücret ${moneyStr} ₺, işletmesi ${stateStr} ₺ devlet desteği alacak.`);
+                bulkLines.push(`${r.sno || (i + 1)}- ${r.n} devamsızlığı ${r.dev} gün, alacağı ücret ${moneyStr} ₺, işletmesi ${stateStr} ₺ devlet desteği alacak.`);
 
                 const sms = `Değerli İşletme Yetkilisi, \nİyi çalışmalar dileriz. Ben, ${schoolName} ${senderName}.\n\n${ay} dönemi stajyer öğrencimiz ${r.n} için belirlenen ${moneyStr} ₺ tutarındaki stajyer maaşının, öğrenci IBAN hesabına yatırılmasını ve ödeme dekontunun tarafımıza iletilmesini rica ederiz.\n\nÖdemenizin tamamlanmasını müteakip, ilgili döneme ait ${stateStr} ₺ tutarındaki devlet katkısı payı işletme hesabınıza aktarılacaktır.\n\nGereken hassasiyeti göstereceğiniz için şimdiden teşekkür eder, iyi mesailer dileriz.`;
+                const thanksSms = `Değerli İşletme Yetkilisi, \nİyi çalışmalar dileriz. Ben, ${schoolName} ${senderName}.\n\n${ay} dönemi stajyer öğrencimiz ${r.n} için belirlenen stajyer maaş ödemesini gerçekleştirdiğiniz için çok teşekkür ederiz. Ödemeniz onaylanmış olup, devlet katkısı süreci başlatılmıştır.\n\nDesteğiniz ve hassasiyetiniz için teşekkür eder, iyi mesailer dileriz.`;
+                const reminderSms = `Değerli İşletme Yetkilisi, \nİyi çalışmalar dileriz. Ben, ${schoolName} ${senderName}.\n\n${ay} dönemi stajyer öğrencimiz ${r.n} için stajyer maaş ödemelerinin her ayın 8'ine kadar tamamlanması büyük önem arz etmektedir. Bu tarihten sonra yapılan ödemelerde devlet katkısı tahakkuk sürecinde teknik aksaklıklar yaşanabilmektedir. \n\nHassasiyetle konuyu takip etmenizi rica eder, iyi mesailer dileriz.`;
+
+                const waClean = r.ph.replace(/\D/g, '');
+                const waUrl = waClean ? `https://wa.me/90${waClean}?text=${encodeURIComponent(sms)}` : `https://wa.me/?text=${encodeURIComponent(sms)}`;
+                const thanksWaUrl = waClean ? `https://wa.me/90${waClean}?text=${encodeURIComponent(thanksSms)}` : `https://wa.me/?text=${encodeURIComponent(thanksSms)}`;
+                const reminderWaUrl = waClean ? `https://wa.me/90${waClean}?text=${encodeURIComponent(reminderSms)}` : `https://wa.me/?text=${encodeURIComponent(reminderSms)}`;
+
                 const box = document.createElement('div');
                 box.className = 'student-card';
-                box.innerHTML = `<div class="card-header"><div><div class="s-name" style="color:var(--text-main);">${r.n || 'Öğrenci Adı Belirtilmedi'}</div><div class="b-name" style="color:var(--text-sub);">${r.b || 'İşletme Adı Belirtilmedi'}</div></div></div><div class="card-body" style="padding:20px;"><div style="display:flex; gap:10px; margin-bottom:15px;"><div style="flex:1; background:var(--accent); padding:10px; border-radius:12px; border:1px solid var(--border); text-align:center;"><div style="font-size:9px; font-weight:800; color:var(--text-sub);">YATACAK MAAŞ</div><div style="font-size:17px; font-weight:900; color:var(--primary);">${moneyStr} ₺</div></div><div style="flex:1; background:var(--bg); padding:10px; border-radius:12px; border:1px solid var(--border); text-align:center;"><div style="font-size:9px; font-weight:800; color:var(--text-sub);">DEVLET KATKISI</div><div style="font-size:17px; font-weight:900; color:var(--text-main);">${stateStr} ₺</div></div></div><div class="msg-display" id="sms-${i}">${sms}</div><div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;"><button class="btn-act btn-copy" onclick="copyFinal(${i}, this)">📋 Kopyala</button><a href="https://wa.me/?text=${encodeURIComponent(sms)}" target="_blank" class="btn-act btn-wa">📱 WhatsApp</a></div></div>`;
+                box.innerHTML = `
+                    <div class="card-header">
+                        <div>
+                            <div class="s-name">${r.n || 'Öğrenci Adı Belirtilmedi'}</div>
+                            <div class="b-name">${r.b || 'İşletme Adı Belirtilmedi'}</div>
+                        </div>
+                    </div>
+                    <div class="card-body" style="padding: 20px;">
+                        <div style="display:flex; gap:10px; margin-bottom:15px;">
+                            <div style="flex:1; background:#f0fdf4; padding:10px; border-radius:12px; border:1px solid #dcfce7; text-align:center;">
+                                <div style="font-size:9px; font-weight:800; color:#16a34a;">YATACAK MAAŞ</div>
+                                <div style="font-size:17px; font-weight:900; color:#166534;">${moneyStr} ₺</div>
+                            </div>
+                            <div style="flex:1; background:#f8fafc; padding:10px; border-radius:12px; border:1px solid #e2e8f0; text-align:center;">
+                                <div style="font-size:9px; font-weight:800; color:#64748b;">DEVLET KATKISI</div>
+                                <div style="font-size:17px; font-weight:900; color:#1e293b;">${stateStr} ₺</div>
+                            </div>
+                        </div>
+                        <div class="msg-display" id="sms-${i}" style="margin: 0 0 15px 0; font-size: 11px;">${sms}</div>
+                        <div style="display:flex; flex-direction: column; gap:10px;">
+                            <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:6px;">
+                                <a href="${waUrl}" target="_blank" class="btn-act btn-wa" style="background:#075e54; font-size: 10px; padding: 10px 2px;">📱 Talep</a>
+                                <a href="${thanksWaUrl}" target="_blank" class="btn-act btn-wa" style="background:#16a34a; font-size: 10px; padding: 10px 2px;">🙏 Teşekkür</a>
+                                <a href="${reminderWaUrl}" target="_blank" class="btn-act btn-wa" style="background:#e11d48; font-size: 10px; padding: 10px 2px;">⚠️ Hatırlat</a>
+                            </div>
+                            <button class="btn-act btn-copy" style="width: 100%; font-size: 11px; padding: 10px;" onclick="copyFinal(${i}, this)">📋 Mesajı Kopyala</button>
+                        </div>
+                    </div>`;
                 grid.appendChild(box);
             });
 
             bulkText.innerText = bulkLines.join('\n');
             bulkSection.classList.remove('hidden');
+
             grid.scrollIntoView({ behavior: 'smooth' });
         }
+
+
 
         function copyBulk() {
             const text = document.getElementById('bulkText').innerText;
             navigator.clipboard.writeText(text).then(() => {
                 alert("Toplu liste kopyalandı! ✅");
             });
-        }
-
-        function copyAnnouncement() {
-            const text = document.getElementById('announcementText').innerText;
-            navigator.clipboard.writeText(text).then(() => {
-                alert("Duyuru metni kopyalandı! ✅");
-            });
-        }
-
-        function sendAnnouncementWA() {
-            const text = document.getElementById('announcementText').innerText;
-            window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank');
         }
 
         function copyFinal(id, btn) {
